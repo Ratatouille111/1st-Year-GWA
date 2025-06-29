@@ -8,50 +8,78 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: white;
-      color: black;
+      background: #fff;
+      color: #000;
       padding: 1rem;
     }
+
     h1 {
       text-align: center;
       margin-bottom: 1rem;
+      font-weight: normal;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 1rem;
+      font-size: 0.95rem;
     }
+
     th, td {
-      border: 1px solid black;
-      padding: 0.4rem;
+      border: 1px solid #000;
+      padding: 0.5rem;
       text-align: center;
     }
+
     input[type="number"] {
       width: 100%;
       border: none;
       background: transparent;
       text-align: center;
       font-size: 1rem;
+      color: #000;
     }
+
     input[type="number"]:focus {
       outline: none;
     }
+
     .gpa-output {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: bold;
       text-align: center;
+      margin-top: 0.3rem;
+      color: #333;
     }
+
+    .row-1st {
+      background-color: #f9f9f9;
+    }
+
+    .row-2nd {
+      background-color: #efefef;
+    }
+
+    .row-summer {
+      background-color: #e5e5e5;
+    }
+
     @media (max-width: 600px) {
       th, td {
         font-size: 0.85rem;
         padding: 0.25rem;
+      }
+
+      input[type="number"] {
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
 
-  <h1>🖤 BSN 1st Year GPA Calculator</h1>
+  <h1>BSN 1st Year GPA Calculator</h1>
 
   <table>
     <thead>
@@ -63,56 +91,73 @@
       </tr>
     </thead>
     <tbody id="grade-table">
-      <!-- rows inserted via JavaScript -->
+      <!-- JS-generated rows go here -->
     </tbody>
   </table>
 
-  <div class="gpa-output">🎯 1st Sem GPA: <span id="gpa1">0.00</span></div>
-  <div class="gpa-output">📚 2nd Sem GPA: <span id="gpa2">0.00</span></div>
-  <div class="gpa-output">🌞 Summer GPA: <span id="gpa3">0.00</span></div>
-  <div class="gpa-output">🧮 Overall GPA: <span id="gpaAll">0.00</span></div>
+  <div class="gpa-output">1st Semester GPA: <span id="gpa1">0.00</span></div>
+  <div class="gpa-output">2nd Semester GPA: <span id="gpa2">0.00</span></div>
+  <div class="gpa-output">Summer GPA: <span id="gpa3">0.00</span></div>
+  <div class="gpa-output">Overall GPA: <span id="gpaAll">0.00</span></div>
 
   <script>
-    const subjects = [
-      { sem: '1st Sem', name: 'AnaPhy', units: 5 },
-      { sem: '1st Sem', name: 'BioChem', units: 5 },
-      { sem: '1st Sem', name: 'TFN', units: 3 },
-      { sem: '1st Sem', name: 'UTS', units: 3 },
-      { sem: '1st Sem', name: 'History', units: 3 },
-      { sem: '1st Sem', name: 'Math', units: 3 },
-      { sem: '1st Sem', name: 'PE 1', units: 2 },
-      { sem: '1st Sem', name: 'Rel 1', units: 1.5 },
+    const subjects = {
+      "1st Sem": [
+        { name: 'AnaPhy', units: 5 },
+        { name: 'BioChem', units: 5 },
+        { name: 'TFN', units: 3 },
+        { name: 'UTS', units: 3 },
+        { name: 'History', units: 3 },
+        { name: 'Math', units: 3 },
+        { name: 'PE 1', units: 2 },
+        { name: 'Rel 1', units: 1.5 },
+      ],
+      "2nd Sem": [
+        { name: 'HA', units: 5 },
+        { name: 'Funda', units: 5 },
+        { name: 'MicroPara', units: 4 },
+        { name: 'PurComm', units: 3 },
+        { name: 'HE', units: 3 },
+        { name: 'PE 2', units: 2 },
+        { name: 'Rel 2', units: 1.5 },
+      ],
+      "Summer": [
+        { name: 'Ethics', units: 3 },
+        { name: 'PE 3', units: 2 },
+      ]
+    };
 
-      { sem: '2nd Sem', name: 'HA', units: 5 },
-      { sem: '2nd Sem', name: 'Funda', units: 5 },
-      { sem: '2nd Sem', name: 'MicroPara', units: 4 },
-      { sem: '2nd Sem', name: 'PurComm', units: 3 },
-      { sem: '2nd Sem', name: 'HE', units: 3 },
-      { sem: '2nd Sem', name: 'PE 2', units: 2 },
-      { sem: '2nd Sem', name: 'Rel 2', units: 1.5 },
-
-      { sem: 'Summer', name: 'Ethics', units: 3 },
-      { sem: 'Summer', name: 'PE 3', units: 2 }
-    ];
+    const semesterColors = {
+      "1st Sem": "row-1st",
+      "2nd Sem": "row-2nd",
+      "Summer": "row-summer"
+    };
 
     const grades = {};
 
     function createTable() {
       const table = document.getElementById("grade-table");
-      subjects.forEach(({ sem, name, units }) => {
-        grades[name] = 0;
-        const row = document.createElement("tr");
 
-        row.innerHTML = `
-          <td>${sem}</td>
-          <td>${name}</td>
-          <td>${units}</td>
-          <td>
-            <input type="number" step="0.01" min="0" max="100" value="0"
-              onchange="updateGrade('${name}', this.value)">
-          </td>
-        `;
-        table.appendChild(row);
+      Object.entries(subjects).forEach(([sem, courses]) => {
+        courses.forEach((course, idx) => {
+          const row = document.createElement("tr");
+          row.classList.add(semesterColors[sem]);
+
+          const semCell = idx === 0
+            ? `<td rowspan="${courses.length}">${sem}</td>`
+            : "";
+
+          grades[course.name] = 0;
+
+          row.innerHTML = `
+            ${semCell}
+            <td>${course.name}</td>
+            <td>${course.units}</td>
+            <td><input type="number" step="0.01" min="0" max="100" value="0"
+                onchange="updateGrade('${course.name}', this.value)"></td>
+          `;
+          table.appendChild(row);
+        });
       });
     }
 
@@ -122,29 +167,38 @@
     }
 
     function calculateGPA() {
-      let totals = {
+      const totals = {
         "1st Sem": { units: 0, points: 0 },
         "2nd Sem": { units: 0, points: 0 },
         "Summer": { units: 0, points: 0 },
         "Overall": { units: 0, points: 0 }
       };
 
-      subjects.forEach(({ sem, name, units }) => {
-        const grade = grades[name];
-        totals[sem].units += units;
-        totals[sem].points += grade * units;
-        totals["Overall"].units += units;
-        totals["Overall"].points += grade * units;
+      Object.entries(subjects).forEach(([sem, courseList]) => {
+        courseList.forEach(({ name, units }) => {
+          const grade = grades[name];
+          totals[sem].units += units;
+          totals[sem].points += grade * units;
+          totals["Overall"].units += units;
+          totals["Overall"].points += grade * units;
+        });
       });
 
-      document.getElementById("gpa1").textContent =
-        (totals["1st Sem"].points / totals["1st Sem"].units).toFixed(2);
-      document.getElementById("gpa2").textContent =
-        (totals["2nd Sem"].points / totals["2nd Sem"].units).toFixed(2);
-      document.getElementById("gpa3").textContent =
-        (totals["Summer"].points / totals["Summer"].units).toFixed(2);
-      document.getElementById("gpaAll").textContent =
-        (totals["Overall"].points / totals["Overall"].units).toFixed(2);
+      document.getElementById("gpa1").textContent = (
+        totals["1st Sem"].points / totals["1st Sem"].units
+      ).toFixed(2);
+
+      document.getElementById("gpa2").textContent = (
+        totals["2nd Sem"].points / totals["2nd Sem"].units
+      ).toFixed(2);
+
+      document.getElementById("gpa3").textContent = (
+        totals["Summer"].points / totals["Summer"].units
+      ).toFixed(2);
+
+      document.getElementById("gpaAll").textContent = (
+        totals["Overall"].points / totals["Overall"].units
+      ).toFixed(2);
     }
 
     createTable();
