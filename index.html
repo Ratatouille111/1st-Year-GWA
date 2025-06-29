@@ -34,15 +34,24 @@
 
     input[type="number"] {
       width: 100%;
-      border: none;
-      background: transparent;
+      border: 1px solid #ccc;
+      background: #fdfdfd;
       text-align: center;
       font-size: 1rem;
       color: #000;
+      transition: border-color 0.3s, color 0.3s;
+      padding: 0.25rem;
     }
 
     input[type="number"]:focus {
       outline: none;
+      background: #f0f0f0;
+      border-color: #000;
+    }
+
+    input.zero-grade {
+      border: 1px solid red;
+      color: red;
     }
 
     .gpa-output {
@@ -91,7 +100,7 @@
       </tr>
     </thead>
     <tbody id="grade-table">
-      <!-- JS-generated rows go here -->
+      <!-- JS-generated rows -->
     </tbody>
   </table>
 
@@ -153,8 +162,13 @@
             ${semCell}
             <td>${course.name}</td>
             <td>${course.units}</td>
-            <td><input type="number" step="0.01" min="0" max="100" value="0"
-                onchange="updateGrade('${course.name}', this.value)"></td>
+            <td>
+              <input type="number" 
+                     id="input-${course.name}"
+                     step="0.01" min="0" max="100" 
+                     value="0"
+                     onchange="updateGrade('${course.name}', this.value)">
+            </td>
           `;
           table.appendChild(row);
         });
@@ -162,7 +176,16 @@
     }
 
     function updateGrade(name, value) {
-      grades[name] = parseFloat(value) || 0;
+      const numericValue = parseFloat(value) || 0;
+      grades[name] = numericValue;
+      const input = document.getElementById(`input-${name}`);
+
+      if (numericValue === 0) {
+        input.classList.add("zero-grade");
+      } else {
+        input.classList.remove("zero-grade");
+      }
+
       calculateGPA();
     }
 
