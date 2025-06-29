@@ -3,37 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BSN Grade Calculator</title>
+  <title>BSN 1st Year GPA Calculator</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
     body {
+      margin: 0;
+      font-family: Arial, sans-serif;
       background: white;
       color: black;
-      margin: 0;
       padding: 1rem;
     }
     h1 {
       text-align: center;
       margin-bottom: 1rem;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .tab {
-      border: 1px solid black;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-    }
-    .tab.active {
-      background: black;
-      color: white;
     }
     table {
       width: 100%;
@@ -42,147 +23,133 @@
     }
     th, td {
       border: 1px solid black;
-      padding: 0.5rem;
+      padding: 0.4rem;
       text-align: center;
     }
     input[type="number"] {
       width: 100%;
       border: none;
-      text-align: center;
       background: transparent;
-    }
-    .gpa-display {
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1rem;
+    }
+    input[type="number"]:focus {
+      outline: none;
+    }
+    .gpa-output {
+      font-size: 1.1rem;
       font-weight: bold;
-      margin: 0.5rem 0;
+      text-align: center;
     }
     @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        font-size: 0.9rem;
+      th, td {
+        font-size: 0.85rem;
+        padding: 0.25rem;
       }
     }
   </style>
 </head>
 <body>
 
-  <h1>🖤 BSN 1st Year Grade Calculator</h1>
+  <h1>🖤 BSN 1st Year GPA Calculator</h1>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchSemester('1st Sem')">1st Sem</div>
-    <div class="tab" onclick="switchSemester('2nd Sem')">2nd Sem</div>
-    <div class="tab" onclick="switchSemester('Summer')">Summer</div>
-    <div class="tab" onclick="switchSemester('Overall')">Overall</div>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Semester</th>
+        <th>Course</th>
+        <th>Units</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody id="grade-table">
+      <!-- rows inserted via JavaScript -->
+    </tbody>
+  </table>
 
-  <div id="table-container"></div>
-
-  <div class="gpa-display">🎯 Semester GPA: <span id="semGPA">—</span></div>
-  <div class="gpa-display">🧮 Overall GPA: <span id="overallGPA">—</span></div>
+  <div class="gpa-output">🎯 1st Sem GPA: <span id="gpa1">0.00</span></div>
+  <div class="gpa-output">📚 2nd Sem GPA: <span id="gpa2">0.00</span></div>
+  <div class="gpa-output">🌞 Summer GPA: <span id="gpa3">0.00</span></div>
+  <div class="gpa-output">🧮 Overall GPA: <span id="gpaAll">0.00</span></div>
 
   <script>
-    const subjects = {
-      "1st Sem": [
-        { name: "AnaPhy", units: 5 },
-        { name: "BioChem", units: 5 },
-        { name: "TFN", units: 3 },
-        { name: "UTS", units: 3 },
-        { name: "History", units: 3 },
-        { name: "Math", units: 3 },
-        { name: "PE 1", units: 2 },
-        { name: "Rel 1", units: 1.5 },
-      ],
-      "2nd Sem": [
-        { name: "HA", units: 5 },
-        { name: "Funda", units: 5 },
-        { name: "MicroPara", units: 4 },
-        { name: "PurComm", units: 3 },
-        { name: "HE", units: 3 },
-        { name: "PE 2", units: 2 },
-        { name: "Rel 2", units: 1.5 },
-      ],
-      "Summer": [
-        { name: "Ethics", units: 3 },
-        { name: "PE 3", units: 2 },
-      ]
-    };
+    const subjects = [
+      { sem: '1st Sem', name: 'AnaPhy', units: 5 },
+      { sem: '1st Sem', name: 'BioChem', units: 5 },
+      { sem: '1st Sem', name: 'TFN', units: 3 },
+      { sem: '1st Sem', name: 'UTS', units: 3 },
+      { sem: '1st Sem', name: 'History', units: 3 },
+      { sem: '1st Sem', name: 'Math', units: 3 },
+      { sem: '1st Sem', name: 'PE 1', units: 2 },
+      { sem: '1st Sem', name: 'Rel 1', units: 1.5 },
+
+      { sem: '2nd Sem', name: 'HA', units: 5 },
+      { sem: '2nd Sem', name: 'Funda', units: 5 },
+      { sem: '2nd Sem', name: 'MicroPara', units: 4 },
+      { sem: '2nd Sem', name: 'PurComm', units: 3 },
+      { sem: '2nd Sem', name: 'HE', units: 3 },
+      { sem: '2nd Sem', name: 'PE 2', units: 2 },
+      { sem: '2nd Sem', name: 'Rel 2', units: 1.5 },
+
+      { sem: 'Summer', name: 'Ethics', units: 3 },
+      { sem: 'Summer', name: 'PE 3', units: 2 }
+    ];
 
     const grades = {};
-    let currentSemester = "1st Sem";
 
-    function switchSemester(sem) {
-      currentSemester = sem;
-      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-      document.querySelector(`.tab:nth-child(${Object.keys(subjects).indexOf(sem) + 1})`).classList.add("active");
-      renderTable();
-    }
+    function createTable() {
+      const table = document.getElementById("grade-table");
+      subjects.forEach(({ sem, name, units }) => {
+        grades[name] = 0;
+        const row = document.createElement("tr");
 
-    function renderTable() {
-      const container = document.getElementById("table-container");
-      if (currentSemester === "Overall") {
-        container.innerHTML = "<p style='text-align:center'>View grades by semester above 👆</p>";
-        document.getElementById("semGPA").textContent = "—";
-        document.getElementById("overallGPA").textContent = calculateGPA("overall");
-        return;
-      }
-
-      const rows = subjects[currentSemester].map((subject, i) => `
-        <tr>
-          <td>${subject.name}</td>
-          <td>${subject.units}</td>
+        row.innerHTML = `
+          <td>${sem}</td>
+          <td>${name}</td>
+          <td>${units}</td>
           <td>
-            <input type="number" step="0.01" min="0" max="100"
-              value="${grades[subject.name] ?? ''}"
-              oninput="updateGrade('${subject.name}', this.value)">
+            <input type="number" step="0.01" min="0" max="100" value="0"
+              onchange="updateGrade('${name}', this.value)">
           </td>
-        </tr>
-      `).join("");
-
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Course</th>
-              <th>Units</th>
-              <th>Grade</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
-
-      document.getElementById("semGPA").textContent = calculateGPA(currentSemester);
-      document.getElementById("overallGPA").textContent = calculateGPA("overall");
+        `;
+        table.appendChild(row);
+      });
     }
 
-    function updateGrade(course, value) {
-      const grade = parseFloat(value);
-      grades[course] = isNaN(grade) ? "" : grade;
-      document.getElementById("semGPA").textContent = calculateGPA(currentSemester);
-      document.getElementById("overallGPA").textContent = calculateGPA("overall");
+    function updateGrade(name, value) {
+      grades[name] = parseFloat(value) || 0;
+      calculateGPA();
     }
 
-    function calculateGPA(sem) {
-      let totalUnits = 0;
-      let totalPoints = 0;
+    function calculateGPA() {
+      let totals = {
+        "1st Sem": { units: 0, points: 0 },
+        "2nd Sem": { units: 0, points: 0 },
+        "Summer": { units: 0, points: 0 },
+        "Overall": { units: 0, points: 0 }
+      };
 
-      const allCourses = sem === "overall"
-        ? Object.values(subjects).flat()
-        : subjects[sem];
-
-      allCourses.forEach(({ name, units }) => {
-        const grade = parseFloat(grades[name]);
-        if (!isNaN(grade)) {
-          totalPoints += grade * units;
-          totalUnits += units;
-        }
+      subjects.forEach(({ sem, name, units }) => {
+        const grade = grades[name];
+        totals[sem].units += units;
+        totals[sem].points += grade * units;
+        totals["Overall"].units += units;
+        totals["Overall"].points += grade * units;
       });
 
-      return totalUnits > 0 ? (totalPoints / totalUnits).toFixed(2) : "—";
+      document.getElementById("gpa1").textContent =
+        (totals["1st Sem"].points / totals["1st Sem"].units).toFixed(2);
+      document.getElementById("gpa2").textContent =
+        (totals["2nd Sem"].points / totals["2nd Sem"].units).toFixed(2);
+      document.getElementById("gpa3").textContent =
+        (totals["Summer"].points / totals["Summer"].units).toFixed(2);
+      document.getElementById("gpaAll").textContent =
+        (totals["Overall"].points / totals["Overall"].units).toFixed(2);
     }
 
-    // Initial render
-    renderTable();
+    createTable();
+    calculateGPA();
   </script>
+
 </body>
 </html>
